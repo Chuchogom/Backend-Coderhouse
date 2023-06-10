@@ -1,3 +1,5 @@
+import fs from "fs"
+
 class ProductManager {
 
   constructor() {
@@ -75,17 +77,15 @@ class ProductManager {
   }
 
   // Modify a product
-  updateProduct = (id, title, description, price, thumbnail, stock) => {
-    const product = this.products.find(product => product.id === id)
-    if (product) {
-      product.title = title
-      product.description = description
-      product.price = price
-      product.thumbnail = thumbnail
-      product.stock = stock
-    } else {
-      throw new Error('Product not found')
+  updateProduct = async (productId, updatedProduct) => {
+    const index = this.products.findIndex((product) => product.id == productId);
+
+    if (index === -1) {
+      return "Product Not Found";
     }
+
+    this.products[index] = { ...this.products[index], ...updatedProduct };
+    await this.saveProductsToFile();
   }
 
   // Delete a product
@@ -98,11 +98,37 @@ class ProductManager {
     }
   }
 
+  async loadProductsFromFile() {
+    try {
+      const data = await fs.readFile('products.json');
+      const products = JSON.parse(data);
+      this.products = [...this.products, ...products];
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async saveProductsToFile() {
+    try {
+      await fs.writeFile('products.json', JSON.stringify(this.products, null, 2));
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
 }
 
 const productManager = new ProductManager()
 productManager.addProduct("Bycicle","Mountain Bycicle",299,"https://m.media-amazon.com/images/I/71qMz+mUekL._AC_SX679_.jpg",33)
-//productManager.addProduct("","Mountain Bycicle",299,"https://m.media-amazon.com/images/I/71qMz+mUekL._AC_SX679_.jpg",33)
+productManager.addProduct("Bycicle City","City Bycicle",299,"No Image",33)
 
 console.log(productManager.getProductById(1))
 console.log(productManager.getProductById(5))
+
+const updatedProduct ={
+  title:'Product Test',
+  price: 99.99
+}
+productManager.updateProduct(2,updatedProduct);
+
+productManager.deleteProduct(2);
