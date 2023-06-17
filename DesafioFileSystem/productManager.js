@@ -2,7 +2,8 @@ import fs from "fs"
 
 class ProductManager {
 
-  constructor() {
+  constructor(path) {
+    this.path = path
     this.products = []
   }
 
@@ -19,7 +20,7 @@ class ProductManager {
   }
 
   //Add a new product
-  addProduct = (title, description, price, thumbnail, stock) => {
+  addProduct = async (title, description, price, thumbnail, stock) => {
     const id = this.productId()
     const code = `PRD-${this.productId()}`
     const product = {
@@ -45,9 +46,7 @@ class ProductManager {
     }
 
     // Check if the code already exists
-    const productWithSameCode = this.products.find(
-      (product) => product.code === code
-    )
+    const productWithSameCode = this.products.find((product) => product.code === code)
     if (productWithSameCode) {
       throw new Error('The code already exists')
     }
@@ -61,29 +60,32 @@ class ProductManager {
     if (title === '' || description === '' || price === '' || thumbnail === '') {
       throw new Error('All arguments must be non-empty')
     }
-
+    //Add the producyt to the array
     this.products.push(product)
+
+    //Save the products in the json file
+    try {
+      await this.saveProductsToFile();
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   //Get all the product info with an id
   getProductById = (productId) => {
     const product = this.products.find(product => product.id == productId)
-
     if (product == undefined) {
       return "Product Not Found"
     }
-
     return product
   }
 
   // Modify a product
   updateProduct = async (productId, updatedProduct) => {
     const index = this.products.findIndex((product) => product.id == productId);
-
     if (index === -1) {
       return "Product Not Found";
     }
-
     this.products[index] = { ...this.products[index], ...updatedProduct };
     await this.saveProductsToFile();
   }
@@ -100,7 +102,7 @@ class ProductManager {
 
   async loadProductsFromFile() {
     try {
-      const data = await fs.readFile('products.json');
+      const data = await fs.promises.readFile('products.json');
       const products = JSON.parse(data);
       this.products = [...this.products, ...products];
     } catch (error) {
@@ -110,17 +112,17 @@ class ProductManager {
 
   async saveProductsToFile() {
     try {
-      await fs.writeFile('products.json', JSON.stringify(this.products, null, 2));
+      const productsJson = JSON.stringify(this.products, null, 2);
+      await fs.writeFile('products.json', productsJson);
     } catch (error) {
       console.error(error);
     }
   }
-
 }
 
 const productManager = new ProductManager()
 productManager.addProduct("Bycicle","Mountain Bycicle",299,"https://m.media-amazon.com/images/I/71qMz+mUekL._AC_SX679_.jpg",33)
-productManager.addProduct("Bycicle City","City Bycicle",299,"No Image",33)
+//productManager.addProduct("Bycicle City","City Bycicle",299,"No Image",33)
 
 console.log(productManager.getProductById(1))
 console.log(productManager.getProductById(5))
