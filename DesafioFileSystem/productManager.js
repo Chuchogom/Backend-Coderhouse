@@ -1,4 +1,4 @@
-import fs from "fs"
+import * as fs from "fs/promises"
 
 class ProductManager {
 
@@ -22,14 +22,14 @@ class ProductManager {
   //Add a new product
   addProduct = async (title, description, price, thumbnail, stock) => {
     const id = this.productId()
-    const code = `PRD-${this.productId()}`
+    const code = `PRD-${id}`;
     const product = {
       id,
       title,
       description,
       price,
       thumbnail,
-      code,
+      code: `PRD-${id}`,
       stock: stock === undefined ? 50 : stock
     }
 
@@ -62,13 +62,8 @@ class ProductManager {
     }
     //Add the producyt to the array
     this.products.push(product)
-
     //Save the products in the json file
-    try {
-      await this.saveProductsToFile();
-    } catch (error) {
-      console.error(error);
-    }
+    this.saveProductsToFile()
   }
 
   //Get all the product info with an id
@@ -91,13 +86,14 @@ class ProductManager {
   }
 
   // Delete a product
-  deleteProduct = (id) => {
-    const product = this.products.find(product => product.id === id)
-    if (product) {
-      this.products.splice(this.products.indexOf(product), 1)
-    } else {
-      throw new Error('Product not found')
+  deleteProduct = async (productId) => {
+    const index = this.products.findIndex((product) => product.id === productId)
+    if (index === -1) {
+      return "Product Not Found"
     }
+
+    this.products.splice(index, 1)
+    await this.saveProductsToFile()
   }
 
   async loadProductsFromFile() {
@@ -131,6 +127,6 @@ const updatedProduct ={
   title:'Product Test',
   price: 99.99
 }
-productManager.updateProduct(2,updatedProduct);
+productManager.updateProduct(1,updatedProduct);
 
 productManager.deleteProduct(2);

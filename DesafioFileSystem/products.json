@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "id": 1,
+    "title": "Product Test",
+    "description": "Mountain Bycicle",
+    "price": 99.99,
+    "thumbnail": "https://m.media-amazon.com/images/I/71qMz+mUekL._AC_SX679_.jpg",
+    "code": "PRD-1",
+    "stock": 33
+  }
+]
