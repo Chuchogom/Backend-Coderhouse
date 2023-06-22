@@ -1,4 +1,4 @@
-import * as fs from "fs/promises"
+import fs from 'fs'
 
 class ProductManager {
 
@@ -8,12 +8,14 @@ class ProductManager {
   }
 
   //Get all the products
-  getProducts = () => {
+  getProducts = async () => {
+    await this.loadProductsFromFile()
     return this.products
   }
 
   //Search a product by id
-  productId = () => {
+  productId = async () => {
+    await this.loadProductsFromFile()
     const count = this.products.length
     const nextId = (count > 0) ? this.products[count - 1].id + 1 : 1
     return nextId
@@ -21,7 +23,8 @@ class ProductManager {
 
   //Add a new product
   addProduct = async (title, description, price, thumbnail, stock) => {
-    const id = this.productId()
+    await this.loadProductsFromFile()
+    const id = Number(await this.productId())
     const code = `PRD-${id}`;
     const product = {
       id,
@@ -52,9 +55,7 @@ class ProductManager {
     }
 
     // Check if the stock is negative
-    if (stock < 0) {
-      throw new Error('Stock cannot be negative')
-    }
+    if (stock < 0) {throw new Error('Stock cannot be negative')}
 
     // Check if any of the variables are empty
     if (title === '' || description === '' || price === '' || thumbnail === '') {
@@ -64,19 +65,22 @@ class ProductManager {
     this.products.push(product)
     //Save the products in the json file
     this.saveProductsToFile()
+    return id
   }
 
   //Get all the product info with an id
-  getProductById = (productId) => {
+  getProductById = async (productId) => {
+    await this.loadProductsFromFile()
     const product = this.products.find(product => product.id == productId)
     if (product == undefined) {
       return "Product Not Found"
     }
-    return product
+    return {id : product.id, ...product}
   }
 
   // Modify a product
   updateProduct = async (productId, updatedProduct) => {
+    await this.loadProductsFromFile()
     const index = this.products.findIndex((product) => product.id == productId);
     if (index === -1) {
       return "Product Not Found";
@@ -87,6 +91,7 @@ class ProductManager {
 
   // Delete a product
   deleteProduct = async (productId) => {
+    await this.loadProductsFromFile()
     const index = this.products.findIndex((product) => product.id === productId)
     if (index === -1) {
       return "Product Not Found"
@@ -98,9 +103,12 @@ class ProductManager {
 
   async loadProductsFromFile() {
     try {
-      const data = await fs.promises.readFile('products.json');
-      const products = JSON.parse(data);
-      this.products = [...this.products, ...products];
+      const productsJson = await fs.promises.readFile('products.json', 'utf-8');
+      if (!productsJson) {
+        return [];
+      }
+      const products = JSON.parse(productsJson);
+      this.products = products
     } catch (error) {
       console.error(error);
     }
@@ -109,24 +117,32 @@ class ProductManager {
   async saveProductsToFile() {
     try {
       const productsJson = JSON.stringify(this.products, null, 2);
-      await fs.writeFile('products.json', productsJson);
+      await fs.promises.writeFile('products.json', productsJson);
     } catch (error) {
       console.error(error);
     }
   }
 }
 
-const productManager = new ProductManager()
-productManager.addProduct("Bycicle","Mountain Bycicle",299,"https://m.media-amazon.com/images/I/71qMz+mUekL._AC_SX679_.jpg",33)
+
+//Testing Area
+const testFunctions = async () => {
+  const productManager = new ProductManager()
+  await productManager.addProduct("Bycicle","Mountain Bycicle",299,"https://m.media-amazon.com/images/I/71qMz+mUekL._AC_SX679_.jpg",33)
+  await productManager.getProducts()
+  console.log(await productManager.getProductById(1))
+  console.log(await productManager.getProductById(5))
+}
+
+testFunctions()
+
 //productManager.addProduct("Bycicle City","City Bycicle",299,"No Image",33)
 
-console.log(productManager.getProductById(1))
-console.log(productManager.getProductById(5))
 
-const updatedProduct ={
-  title:'Product Test',
-  price: 99.99
-}
-productManager.updateProduct(1,updatedProduct);
+// const updatedProduct ={
+//   title:'Product Test',
+//   price: 99.99
+// }
+// productManager.updateProduct(1,updatedProduct);
 
-productManager.deleteProduct(2);
+// productManager.deleteProduct(2);
