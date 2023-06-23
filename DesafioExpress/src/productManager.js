@@ -125,25 +125,3 @@ class ProductManager {
 }
 
 export default ProductManager
-
-//Testing Area
-const testFunctions = async () => {
-  const productManager = new ProductManager()
-  await productManager.addProduct("Bycicle","Mountain Bycicle",299,"https://m.media-amazon.com/images/I/71qMz+mUekL._AC_SX679_.jpg",33)
-  await productManager.getProducts()
-  console.log(await productManager.getProductById(1))
-  console.log(await productManager.getProductById(5))
-}
-
-//testFunctions()
-
-//productManager.addProduct("Bycicle City","City Bycicle",299,"No Image",33)
-
-
-// const updatedProduct ={
-//   title:'Product Test',
-//   price: 99.99
-// }
-// productManager.updateProduct(1,updatedProduct);
-
-// productManager.deleteProduct(2);
