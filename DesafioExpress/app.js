@@ -15,8 +15,8 @@ app.get('/products', async (req, res) => {
     try {
         const limit = req.query.limit
         if (limit) {
-            const products = await productManager.getProducts(limit)
-            res.json(products)
+            const products = await productManager.getProducts()
+            res.json(products.slice(0, limit))
         } else {
             const products = await productManager.getProducts()
             res.json(products)
@@ -34,9 +34,10 @@ app.post('/products', async (req, res) => {
         await productManager.addProduct(
             title, description, price, thumbnail, stock
         )
+        res.json({ status: 'success', message: 'Product added succesfully' })
     } catch (error) {
         console.error(error);
-        res.json({ status: 'success', message: 'Product added succesfully' })
+        res.status(500).send(error.message)
     }
 })
 
@@ -67,7 +68,7 @@ app.put('/products/:id', async (req, res) => {
 
 //Delete a product by id
 app.delete('/products/:id', async (req, res) => {
-    const productId = req.params.id
+    const productId = Number(req.params.id)
     try {
         await productManager.deleteProduct(productId)
         res.json({status: 'sucsess', message: 'Product deleted'})
