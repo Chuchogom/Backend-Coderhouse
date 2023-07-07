@@ -1,17 +1,12 @@
-import express from 'express';
-import ProductManager from './src/productManager.js';
+import { Router } from "express";
+import ProductManager from "../productManager.js";
 
-const app = express()
-app.use(express.json())
+const router = Router()
+
 const productManager = new ProductManager()
 
-// Homepage
-app.get('/', (req,res) => {
-    res.send('Welcome Homepage')
-})
-
-// Get all th products
-app.get('/products', async (req, res) => {
+// Get all the products
+router.get('/', async (req, res) => {
     try {
         const limit = req.query.limit
         if (limit) {
@@ -28,7 +23,7 @@ app.get('/products', async (req, res) => {
 })
 
 //Add a new product
-app.post('/products', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { title, description, price, thumbnail, stock } = req.body
         await productManager.addProduct(
@@ -42,7 +37,7 @@ app.post('/products', async (req, res) => {
 })
 
 //Get a product by id
-app.get('products/:id', async (req,res)=>{
+router.get('/:id', async (req, res) => {
     const productId = req.params.id
     try {
         const product =  await productManager.getProductById(productId)
@@ -54,7 +49,7 @@ app.get('products/:id', async (req,res)=>{
 })
 
 //Update a product by id
-app.put('/products/:id', async (req, res) => {
+router.put('/:id', async (req, res) => {
     const productId = req.params.id
     const updatedProduct = req.body
     try {
@@ -67,7 +62,7 @@ app.put('/products/:id', async (req, res) => {
 })
 
 //Delete a product by id
-app.delete('/products/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => {
     const productId = Number(req.params.id)
     try {
         await productManager.deleteProduct(productId)
@@ -78,7 +73,4 @@ app.delete('/products/:id', async (req, res) => {
     }
 })
 
-
-//Server
-const port = 8080;
-app.listen(8080, () => console.log(`Server running on port ${port}`))
+export default router
